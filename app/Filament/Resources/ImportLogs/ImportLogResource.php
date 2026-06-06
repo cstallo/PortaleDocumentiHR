@@ -1,0 +1,74 @@
+<?php
+
+namespace App\Filament\Resources\ImportLogs;
+
+// use App\Filament\Resources\ImportLogs\Pages\CreateImportLog;
+// use App\Filament\Resources\ImportLogs\Pages\EditImportLog;
+use App\Filament\Resources\ImportLogs\Pages\ViewImportLog;
+use App\Filament\Resources\ImportLogs\Pages\ListImportLogs;
+use App\Filament\Resources\ImportLogs\Schemas\ImportLogForm;
+use App\Filament\Resources\ImportLogs\Tables\ImportLogsTable;
+use App\Models\ImportLog;
+use BackedEnum;
+use Filament\Resources\Resource;
+use Filament\Schemas\Schema;
+use Filament\Support\Icons\Heroicon;
+use Filament\Tables\Table;
+use App\Filament\Concerns\HasAziendaScope; 
+
+
+class ImportLogResource extends Resource
+{
+    use HasAziendaScope;   
+
+    protected static ?string $model = ImportLog::class;
+
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+
+    public static function form(Schema $schema): Schema
+    {
+        return ImportLogForm::configure($schema);
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return 'Storico importazioni';
+    }
+
+       public static function getNavigationGroup(): ?string
+    {
+        return 'Documenti';
+    }
+
+       // niente creazione manuale
+    public static function canCreate(): bool
+    {
+        return false;
+    }
+
+    // HR vede solo i log delle sue aziende
+    public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
+    {
+        return (new static)->scopePerAziende(parent::getEloquentQuery());
+    }
+
+    public static function table(Table $table): Table
+    {
+        return ImportLogsTable::configure($table);
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            //
+        ];
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => ListImportLogs::route('/'),
+            'view'  => ViewImportLog::route('/{record}'),
+        ];
+    }
+}
