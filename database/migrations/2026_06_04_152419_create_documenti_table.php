@@ -26,6 +26,7 @@ return new class extends Migration
         $table->timestamps();
         $table->index(['azienda_id', 'codice_fiscale']);
         $table->index('user_id');
+        
     });
 }
 
