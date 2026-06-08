@@ -80,10 +80,15 @@ class UserResource extends Resource
                 ->maxLength(16)
                 ->visible(fn (\Filament\Schemas\Components\Utilities\Get $get) => $get('role') === 'dipendente'),
 
-            TextInput::make('password')
+             TextInput::make('password')
                 ->password()
-                ->required(fn (string $operation) => $operation === 'create')
-                ->dehydrated(fn ($state) => filled($state))->autocomplete('new-password'),
+                ->revealable()
+                ->autocomplete('new-password')
+                ->visible(fn (\Filament\Schemas\Components\Utilities\Get $get) => in_array($get('role'), ['hr', 'super_admin']))
+                ->required(fn (string $operation, \Filament\Schemas\Components\Utilities\Get $get) =>
+                    $operation === 'create' && in_array($get('role'), ['hr', 'super_admin']))
+                ->dehydrated(fn ($state) => filled($state)),
+
         ]);
     }
 
