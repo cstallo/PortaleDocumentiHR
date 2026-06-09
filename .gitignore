@@ -19,7 +19,9 @@
 /public/hot
 /public/storage
 /storage/*.key
+/storage/app/cedolini/
 /storage/pail
+/storage/testcedolini/
 /vendor
 _ide_helper.php
 Homestead.json
