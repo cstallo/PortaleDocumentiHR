@@ -24,7 +24,10 @@ protected $policies = [
      * Bootstrap any application services.
      */
     public function boot(): void
- {
+    {
+        if (config('app.env') === 'production') {
+        \Illuminate\Support\Facades\URL::forceScheme('https');
+        }
         Azienda::observe(AziendaObserver::class);
     }
 }
