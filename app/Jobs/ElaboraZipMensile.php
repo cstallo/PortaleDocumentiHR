@@ -81,6 +81,20 @@ class ElaboraZipMensile implements ShouldQueue
                 continue;
             }
 
+            // Dedup: se esiste già un Documento per questa persona in questo mese,
+            // salta del tutto (niente file su disco, niente Documento, niente parsing).
+                $giaPresente = Documento::where('azienda_id', $this->aziendaId)
+                ->where('cartella_mese_id', $this->cartellaMeseId)
+                ->whereRaw('UPPER(codice_fiscale) = ?', [strtoupper($cf)])
+                ->exists();
+
+            if ($giaPresente) {
+                $duplicati++;
+                $dettaglioErrori[] = ['file' => $basename, 'errore' => 'gia_presente_saltato'];
+                continue;
+}
+
+
             $destPath     = "{$cartellaMese->path_relativo}/{$basename}";
             $diskCedolini = Storage::disk('cedolini');
 
@@ -118,9 +132,13 @@ class ElaboraZipMensile implements ShouldQueue
                 'utente_non_trovato' => $user === null,
             ]);
 
+            EstraiDatiCedolino::dispatch($documento);   // ← Step 14: parsing asincrono
+
             if ($user) {
                 $documentiPerCf[$cf][] = $documento;
             }
+
+
 
             $elaborati++;
         }
