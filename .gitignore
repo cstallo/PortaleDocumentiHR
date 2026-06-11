@@ -27,3 +27,7 @@ _ide_helper.php
 Homestead.json
 Homestead.yaml
 Thumbs.db
+# Materiale interno / istruzioni AI / scratchpad — non versionare
+/.claude/
+/CLAUDE.md
+/README.md
