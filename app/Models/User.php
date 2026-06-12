@@ -15,15 +15,16 @@ class User extends Authenticatable implements FilamentUser
 
     protected $fillable = [
         'name', 'email', 'password',
-        'role', 'azienda_id', 'codice_fiscale', 'must_change_password',
+        'role', 'azienda_id', 'codice_fiscale', 'must_change_password', 'bot_enabled',
     ];
 
     protected $hidden = ['password', 'remember_token'];
 
     protected $casts = [
         'email_verified_at' => 'datetime',
-        'password'          => 'hashed',
+        'password' => 'hashed',
         'must_change_password' => 'boolean',
+        'bot_enabled' => 'boolean',
     ];
 
     public function canAccessPanel(Panel $panel): bool
@@ -62,12 +63,24 @@ class User extends Authenticatable implements FilamentUser
         if ($this->isSuperAdmin()) {
             return Azienda::query();
         }
+
         return $this->aziendeGestite();
     }
 
-    public function isSuperAdmin(): bool { return $this->role === 'super_admin'; }
-    public function isHr(): bool         { return $this->role === 'hr'; }
-    public function isDipendente(): bool  { return $this->role === 'dipendente'; }
+    public function isSuperAdmin(): bool
+    {
+        return $this->role === 'super_admin';
+    }
+
+    public function isHr(): bool
+    {
+        return $this->role === 'hr';
+    }
+
+    public function isDipendente(): bool
+    {
+        return $this->role === 'dipendente';
+    }
 
     public function scopeByCodiceFiscale($query, string $cf)
     {

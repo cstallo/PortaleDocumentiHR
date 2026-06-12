@@ -4,21 +4,21 @@ namespace App\Filament\Pages;
 
 use App\Filament\Concerns\HasAziendaScope;
 use App\Jobs\ElaboraZipMensile;
+use App\Models\Azienda;
 use App\Services\CartellaMeseService;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
-use Filament\Schemas\Components\Section;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
-use Filament\Forms\Components\TextInput;
-
 
 class ImportazioneMensile extends Page implements HasForms
 {
-    use InteractsWithForms, HasAziendaScope;
+    use HasAziendaScope, InteractsWithForms;
 
     protected string $view = 'filament.pages.importazione-mensile';
 
@@ -46,6 +46,8 @@ class ImportazioneMensile extends Page implements HasForms
 
     public function form(Schema $schema): Schema
     {
+        $maxUploadKilobytes = (int) config('livewire.temporary_file_upload.max_size', 204800);
+
         return $schema
             ->statePath('data')
             ->components([
@@ -55,7 +57,8 @@ class ImportazioneMensile extends Page implements HasForms
                             ->label('Azienda')
                             ->options(function () {
                                 $ids = $this->getAziendeVisibiliIds();
-                                return \App\Models\Azienda::whereIn('id', $ids)
+
+                                return Azienda::whereIn('id', $ids)
                                     ->where('attiva', true)
                                     ->pluck('nome', 'id');
                             })
@@ -70,18 +73,18 @@ class ImportazioneMensile extends Page implements HasForms
                             ->required(),
                         Select::make('mese')
                             ->options([
-                                1=>'Gennaio',  2=>'Febbraio', 3=>'Marzo',
-                                4=>'Aprile',   5=>'Maggio',   6=>'Giugno',
-                                7=>'Luglio',   8=>'Agosto',   9=>'Settembre',
-                                10=>'Ottobre', 11=>'Novembre',12=>'Dicembre',
+                                1 => 'Gennaio',  2 => 'Febbraio', 3 => 'Marzo',
+                                4 => 'Aprile',   5 => 'Maggio',   6 => 'Giugno',
+                                7 => 'Luglio',   8 => 'Agosto',   9 => 'Settembre',
+                                10 => 'Ottobre', 11 => 'Novembre', 12 => 'Dicembre',
                             ])
                             ->default((int) date('m'))
                             ->required(),
-                            TextInput::make('descrizione')
-                                ->label('Descrizione invio')
-                                ->placeholder('Es. Cedolini marzo 2026')
-                                ->maxLength(255)
-                                ->columnSpanFull(),
+                        TextInput::make('descrizione')
+                            ->label('Descrizione invio')
+                            ->placeholder('Es. Cedolini marzo 2026')
+                            ->maxLength(255)
+                            ->columnSpanFull(),
 
                     ])->columns(3),
 
@@ -89,9 +92,9 @@ class ImportazioneMensile extends Page implements HasForms
                     ->schema([
                         FileUpload::make('archivio_zip')
                             ->label('File ZIP cedolini')
-                            ->acceptedFileTypes(['application/zip', 'application/x-zip-compressed'])
-                            ->maxSize(204800)
-                            ->rules(['mimes:zip', 'max:204800'])
+                            ->acceptedFileTypes(['application/zip', 'application/x-zip-compressed', 'application/octet-stream'])
+                            ->maxSize($maxUploadKilobytes)
+                            ->rules(['mimes:zip', 'max:'.$maxUploadKilobytes])
                             ->required()
                             ->disk('local')
                             ->directory('zip-imports-temp'),
@@ -101,22 +104,21 @@ class ImportazioneMensile extends Page implements HasForms
 
     public function importa(): void
     {
-        $data     = $this->form->getState();
+        $data = $this->form->getState();
         $cartella = app(CartellaMeseService::class)
             ->findOrCreate($data['azienda_id'], (int) $data['anno'], (int) $data['mese']);
 
-                ElaboraZipMensile::dispatch(
-            zipPath:        $data['archivio_zip'],
+        ElaboraZipMensile::dispatch(
+            zipPath: $data['archivio_zip'],
             cartellaMeseId: $cartella->id,
-            aziendaId:      $data['azienda_id'],
-            adminId:        auth()->id(),
-            descrizione:    $data['descrizione'] ?? null,
+            aziendaId: $data['azienda_id'],
+            adminId: auth()->id(),
+            descrizione: $data['descrizione'] ?? null,
         );
-
 
         Notification::make()
             ->title('Importazione avviata')
-            ->body('Lo ZIP è in elaborazione per ' . $cartella->azienda->nome)
+            ->body('Lo ZIP è in elaborazione per '.$cartella->azienda->nome)
             ->success()
             ->send();
 
