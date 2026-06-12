@@ -84,6 +84,12 @@ class LlmQueryTranslator
 
         $dipendente = trim((string) $dipendente);
         $intento = $parsed['intento'] ?? 'valore';
+        $campoRichiesto = $this->detectRequestedField($domanda);
+        if ($campoRichiesto !== null) {
+            $intento = 'valore';
+        } elseif ($this->looksLikeDocumentRequest($domanda)) {
+            $intento = 'documento';
+        }
 
         $anno = $parsed['anno'] ?? null;
         $mese = $parsed['mese'] ?? null;
@@ -98,10 +104,12 @@ class LlmQueryTranslator
             return ['ok' => true, 'intento' => 'documento', 'dipendente' => $dipendente, 'anno' => $anno, 'mese' => $mese];
         }
 
-        $campo = $parsed['campo'] ?? null;
+        $campo = $campoRichiesto ?? $parsed['campo'] ?? null;
 
-        if (! in_array($campo, self::CAMPI_AMMESSI, true)) {
-            return ['ok' => false, 'errore' => 'Campo richiesto non disponibile.'];
+        // Nessun campo specifico (o intento riepilogo) → riepilogo dell'ultimo cedolino
+        // (o del periodo indicato), invece di rispondere in modo generico.
+        if ($intento === 'riepilogo' || ! in_array($campo, self::CAMPI_AMMESSI, true)) {
+            return ['ok' => true, 'intento' => 'riepilogo', 'dipendente' => $dipendente, 'anno' => $anno, 'mese' => $mese];
         }
 
         return [
@@ -134,5 +142,32 @@ class LlmQueryTranslator
         }
 
         return null;
+    }
+
+    private function looksLikeDocumentRequest(string $domanda): bool
+    {
+        $domanda = mb_strtolower($domanda);
+
+        $asksToOpen = preg_match('/\b(mostra(?:mi)?|fammi vedere|vedere|vedi|visualizza|apri|aprire|scarica)\b/u', $domanda) === 1;
+        $mentionsPayslip = preg_match('/\b(cedolino|cedolini|busta paga|pdf)\b/u', $domanda) === 1;
+
+        return $asksToOpen && $mentionsPayslip;
+    }
+
+    private function detectRequestedField(string $domanda): ?string
+    {
+        $domanda = mb_strtolower($domanda);
+
+        return match (true) {
+            preg_match('/\bnetto\b/u', $domanda) === 1 => 'netto',
+            preg_match('/\bretribuzione\b|\bpaga\b|\bstipendio\b/u', $domanda) === 1 => 'retribuzione_di_fatto',
+            preg_match('/\bimponibile\b/u', $domanda) === 1 && preg_match('/\bann(?:o|uo|ua|uale|uali)\b|\bprogressiv/u', $domanda) === 1 => 'imponibile_contributi_anno',
+            preg_match('/\bimponibile\b/u', $domanda) === 1 => 'imponibile_contributi_mese',
+            preg_match('/\birpef\b/u', $domanda) === 1 && preg_match('/\bann(?:o|uo|ua|uale|uali)\b|\bprogressiv/u', $domanda) === 1 => 'irpef_pagata_anno',
+            preg_match('/\birpef\b/u', $domanda) === 1 => 'irpef_pagata_mese',
+            preg_match('/\bferie\b/u', $domanda) === 1 => 'ferie_residue',
+            preg_match('/\bpermessi\b|\brol\b/u', $domanda) === 1 => 'permessi_residui',
+            default => null,
+        };
     }
 }

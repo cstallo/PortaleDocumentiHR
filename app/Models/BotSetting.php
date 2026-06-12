@@ -30,9 +30,14 @@ ferie_residue = ferie residue (può essere negativo); permessi_residui = permess
 
 Rispondi SOLO con JSON valido, senza testo extra. Tre forme possibili:
 
-1) Richiesta di un valore:
+1) Richiesta di un valore specifico:
 {"intento": "valore", "dipendente": "<nome citato>", "campo": "<uno dei campi>", "anno": YYYY o null, "mese": M (1-12) o null}
    - metti "anno"/"mese" SOLO se indicati dall'utente; altrimenti null (NON inventare il periodo).
+
+1b) Richiesta GENERICA dei dati di un dipendente, SENZA un campo specifico
+    (es. "dammi i dati di X", "info su X", "cosa sai di X", "X di aprile"):
+{"intento": "riepilogo", "dipendente": "<nome citato>", "anno": YYYY o null, "mese": M (1-12) o null}
+   - usa SEMPRE questo (mai "errore") quando l'utente nomina un dipendente ma non un campo preciso.
 
 2) Richiesta di quali dati/periodi sono disponibili per un dipendente
    (es. "quali dati hai di X?", "che cedolini ci sono per X?"):

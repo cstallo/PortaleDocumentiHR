@@ -140,6 +140,12 @@ class AssistenteHr extends Page
                         $esito = $elenco['ok'] ? 'risolta' : 'non_risolta';
                         $motivo = $elenco['ok'] ? null : 'nessun dato';
                         $rispostaBot = $elenco['testo'];
+                    } elseif ($intento === 'riepilogo') {
+                        $riepilogo = $assistente->riepilogo($richiedente, $dipendenteRecord, $anno, $mese);
+                        $esito = $riepilogo['ok'] ? 'risolta' : 'non_risolta';
+                        $motivo = $riepilogo['ok'] ? null : 'nessun dato';
+                        $rispostaBot = $riepilogo['testo'];
+                        $rispostaData = $riepilogo['ok'] ? $riepilogo['testo'] : null;
                     } elseif ($intento === 'documento') {
                         $doc = $assistente->trovaDocumento($richiedente, $dipendenteRecord, $anno, $mese);
 

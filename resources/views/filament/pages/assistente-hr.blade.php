@@ -1,7 +1,13 @@
 <x-filament-panels::page>
     <div
-        x-data
+        x-data="{
+            focusInput() {
+                this.$nextTick(() => this.$refs.domandaInput?.focus())
+            },
+        }"
         x-on:elabora-risposta.window="$wire.rispondi()"
+        x-on:chat-scroll.window="focusInput()"
+        x-init="focusInput()"
         style="display:flex; flex-direction:column; height:70vh;"
     >
         {{-- Cronologia messaggi --}}
@@ -47,6 +53,7 @@
         {{-- Barra di input --}}
         <form wire:submit="invia" style="margin-top:12px; display:flex; gap:8px;">
             <input
+                x-ref="domandaInput"
                 type="text"
                 wire:model="domanda"
                 placeholder="Scrivi la tua domanda…"
