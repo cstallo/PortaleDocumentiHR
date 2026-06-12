@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -28,6 +29,17 @@ class User extends Authenticatable implements FilamentUser
     public function canAccessPanel(Panel $panel): bool
     {
         return in_array($this->role, ['super_admin', 'hr']);
+    }
+
+    /**
+     * Forza il codice fiscale in UPPERCASE a ogni scrittura (invariante di progetto).
+     * Garantisce l'invariante da qualunque punto si crei/aggiorni l'utente.
+     */
+    protected function codiceFiscale(): Attribute
+    {
+        return Attribute::make(
+            set: fn (?string $value) => $value !== null ? strtoupper($value) : null,
+        );
     }
 
     public function azienda()

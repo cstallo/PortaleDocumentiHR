@@ -16,6 +16,7 @@ use Illuminate\Queue\Attributes\Tries;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Storage;
+
 use ZipArchive;
 
 #[Timeout(600)]
@@ -61,6 +62,7 @@ class ElaboraZipMensile implements ShouldQueue
         $elaborati = $erroriCf = $nomeNonValido = $duplicati = 0;
         $dettaglioErrori = [];
         $documentiPerCf  = [];
+        $utentiPerCf = [];
 
         for ($i = 0; $i < $totFile; $i++) {
             $filename = $zip->getNameIndex($i);
@@ -83,10 +85,11 @@ class ElaboraZipMensile implements ShouldQueue
 
             // Dedup: se esiste già un Documento per questa persona in questo mese,
             // salta del tutto (niente file su disco, niente Documento, niente parsing).
-                $giaPresente = Documento::where('azienda_id', $this->aziendaId)
+            $giaPresente = Documento::where('azienda_id', $this->aziendaId)
                 ->where('cartella_mese_id', $this->cartellaMeseId)
-                ->whereRaw('UPPER(codice_fiscale) = ?', [strtoupper($cf)])
+                ->where('codice_fiscale', strtoupper($cf))
                 ->exists();
+
 
             if ($giaPresente) {
                 $duplicati++;
@@ -107,9 +110,10 @@ class ElaboraZipMensile implements ShouldQueue
 
             $diskCedolini->put($destPath, $zip->getFromIndex($i));
 
-            $user = User::where('azienda_id', $this->aziendaId)
-                ->whereRaw('UPPER(codice_fiscale) = ?', [strtoupper($cf)])
+            $user = User::byCodiceFiscale($cf)
+                ->where('azienda_id', $this->aziendaId)
                 ->first();
+
 
             if ($user === null) {
                 $erroriCf++;
@@ -136,6 +140,7 @@ class ElaboraZipMensile implements ShouldQueue
 
             if ($user) {
                 $documentiPerCf[$cf][] = $documento;
+                $utentiPerCf[$cf]      = $user;   // ← lo tengo, niente riquery dopo
             }
 
 
@@ -147,11 +152,9 @@ class ElaboraZipMensile implements ShouldQueue
         Storage::disk('local')->delete($this->zipPath);
 
         foreach ($documentiPerCf as $cf => $documenti) {
-            $user = User::where('azienda_id', $this->aziendaId)
-                ->whereRaw('UPPER(codice_fiscale) = ?', [strtoupper($cf)])
-                ->first();
-            $user?->notify(new NuovoDocumentoDisponibile($documenti, $cartellaMese));
+            $utentiPerCf[$cf]?->notify(new NuovoDocumentoDisponibile($documenti, $cartellaMese));
         }
+
 
         $log->update([
             'stato'                => 'completato',

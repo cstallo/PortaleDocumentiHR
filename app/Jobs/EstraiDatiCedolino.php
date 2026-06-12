@@ -13,6 +13,8 @@ use Illuminate\Queue\Attributes\Tries;
 use Illuminate\Queue\Attributes\Timeout;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;   // in testa, con gli altri use
+
 
 #[Tries(3)]
 #[Timeout(60)]
@@ -87,9 +89,16 @@ class EstraiDatiCedolino implements ShouldQueue
                   ]
                 : ['documento_id' => $this->documento->id];
 
-            DatoCedolino::updateOrCreate($chiave, $valori);
-
-        
-        
+            DatoCedolino::updateOrCreate($chiave, $valori);   
     }
+
+        public function failed(\Throwable $e): void
+        {
+            Log::error('Parsing cedolino fallito dopo i retry', [
+                'documento_id' => $this->documento->id,
+                'azienda_id'   => $this->documento->azienda_id,
+                'errore'       => $e->getMessage(),
+            ]);
+        }
+
 }
