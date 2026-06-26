@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\TipoDocumento;
 use Illuminate\Database\Eloquent\Model;
 
 class Documento extends Model
@@ -11,12 +12,16 @@ class Documento extends Model
     protected $fillable = [
         'nome_file', 'path_storage', 'codice_fiscale',
         'azienda_id', 'user_id', 'cartella_mese_id',
-        'import_log_id', 'utente_non_trovato', 'scaricato_il',
+        'import_log_id', 'utente_non_trovato', 'scaricato_il', 'tipo',
+        'descrizione', 'data_documento',
     ];
 
     protected $casts = [
-        'scaricato_il'       => 'datetime',
+        'scaricato_il' => 'datetime',
         'utente_non_trovato' => 'boolean',
+        'data_documento' => 'date',
+        'tipo' => TipoDocumento::class,
+
     ];
 
     public function azienda()
@@ -45,11 +50,22 @@ class Documento extends Model
             return $query;
         }
         $aziendaIds = $user->aziendeGestite()->pluck('aziende.id');
+
         return $query->whereIn('azienda_id', $aziendaIds);
     }
 
     public function scopePerCodiceFiscale($query, string $cf)
     {
         return $query->where('codice_fiscale', strtoupper($cf));
+    }
+
+    public function scopeCedolini($query)
+    {
+        return $query->where('tipo', 'cedolino');
+    }
+
+    public function scopeAziendali($query)
+    {
+        return $query->where('tipo', 'aziendale');
     }
 }

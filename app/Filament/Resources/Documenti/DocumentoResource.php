@@ -1,20 +1,26 @@
 <?php
 
-namespace App\Filament\Resources\Documentos;
+namespace App\Filament\Resources\Documenti;
 
 use App\Filament\Concerns\HasAziendaScope;
-use App\Filament\Resources\Documentos\Pages;
 use App\Models\Documento;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class DocumentoResource extends Resource
 {
     use HasAziendaScope;
 
     protected static ?string $model = Documento::class;
+
+    protected static ?string $slug = 'documenti';
+
+    protected static ?string $modelLabel = 'documento';
+
+    protected static ?string $pluralModelLabel = 'documenti';
 
     public static function getNavigationIcon(): string|\BackedEnum|null
     {
@@ -66,7 +72,7 @@ class DocumentoResource extends Resource
             ->defaultSort('created_at', 'desc');
     }
 
-    public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
+    public static function getEloquentQuery(): Builder
     {
         return (new static)->scopePerAziende(parent::getEloquentQuery());
     }
@@ -74,7 +80,7 @@ class DocumentoResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListDocumentos::route('/'),
+            'index' => Pages\ListDocumenti::route('/'),
         ];
     }
 }

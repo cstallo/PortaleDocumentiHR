@@ -58,6 +58,13 @@ class User extends Authenticatable implements FilamentUser
         return $this->hasMany(Documento::class);
     }
 
+    public function messaggiBacheca()
+    {
+        return $this->belongsToMany(BachecaMessaggio::class, 'bacheca_destinatari', 'user_id', 'messaggio_id')
+            ->withPivot('letto_il', 'notifica_inviata')
+            ->withTimestamps();
+    }
+
     public function aziendeVisibili()
     {
         if ($this->isSuperAdmin()) {
