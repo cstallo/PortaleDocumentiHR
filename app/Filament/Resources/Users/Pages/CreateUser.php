@@ -37,6 +37,7 @@ class CreateUser extends CreateRecord
             // genera token e invia il link per impostare la password
             $token = Password::broker()->createToken($this->record);
             $this->record->notify(new InvitoDipendente($token));
+            $this->record->update(['invito_inviato_il' => now()]);
         } elseif ($this->passwordTemporanea) {
             $this->record->notify(new InvitoUtente($this->passwordTemporanea));
         }

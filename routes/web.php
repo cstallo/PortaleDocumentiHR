@@ -13,6 +13,9 @@ Route::middleware(['auth'])->group(function () {
         ->name('password.change');
     Route::post('/cambio-password', [PasswordChangeController::class, 'update'])
         ->name('password.change.update');
+    Route::get('/privacy', function () {
+        return view('privacy', ['azienda' => auth()->user()->azienda]);
+        })->name('privacy');
 });
 
 Route::middleware(['auth', 'verified', ForcePasswordChange::class])->group(function () {
@@ -37,4 +40,8 @@ Route::middleware(['auth', 'verified', ForcePasswordChange::class])->group(funct
         return back();
     })->name('notifiche.tutte-lette');
 
+    
+
 });
+
+

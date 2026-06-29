@@ -3,11 +3,11 @@
 namespace App\Filament\Resources\Aziendas;
 
 use App\Models\Azienda;
-use App\Filament\Resources\Aziendas\Pages;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -49,6 +49,22 @@ class AziendaResource extends Resource
             TextInput::make('codice_fiscale')->nullable(),
             Textarea::make('indirizzo')->nullable(),
             Toggle::make('attiva')->default(true),
+
+            Section::make('Dati per informativa privacy (GDPR)')
+                ->description('Compaiono nell\'informativa che il dipendente di questa azienda vede nella sua area riservata.')
+                ->schema([
+                    TextInput::make('email_contatto')
+                        ->label('Email / PEC del Titolare')
+                        ->email()
+                        ->helperText('Usata per i contatti e per l\'esercizio dei diritti (artt. 15-22 GDPR).'),
+                    TextInput::make('responsabile_trattamento')
+                        ->label('Responsabile del trattamento (fornitore IT)'),
+                    TextInput::make('dpo_email')
+                        ->label('Email del DPO')
+                        ->email()
+                        ->helperText('Lascia vuoto se non è stato nominato un DPO.'),
+                ])->columns(1),
+
         ]);
     }
 
@@ -70,9 +86,9 @@ class AziendaResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListAziendas::route('/'),
+            'index' => Pages\ListAziendas::route('/'),
             'create' => Pages\CreateAzienda::route('/create'),
-            'edit'   => Pages\EditAzienda::route('/{record}/edit'),
+            'edit' => Pages\EditAzienda::route('/{record}/edit'),
         ];
     }
 }

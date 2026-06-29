@@ -5,10 +5,13 @@ namespace App\Filament\Resources\Users;
 use App\Filament\Concerns\HasAziendaScope;
 use App\Models\Azienda;
 use App\Models\User;
+use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Tables;
@@ -86,6 +89,38 @@ class UserResource extends Resource
                 ->maxLength(16)
                 ->visible(fn (Get $get) => $get('role') === 'dipendente'),
 
+            Section::make('Anagrafica dipendente')
+                ->schema([
+                    Grid::make(2)->schema([
+                        TextInput::make('cognome'),
+                        TextInput::make('nome'),
+                        TextInput::make('matricola')->label('Matricola'),
+                        TextInput::make('sede'),
+                        Select::make('sesso')
+                            ->options(['F' => 'Femmina', 'M' => 'Maschio']),
+                        TextInput::make('luogo_nascita')->label('Luogo di nascita'),
+                        DatePicker::make('data_nascita')
+                            ->label('Data di nascita')
+                            ->displayFormat('d/m/Y'),
+                    ]),
+                ])
+                ->columns(1)
+                ->visible(fn (Get $get) => $get('role') === 'dipendente'),
+
+            Section::make('Rapporto di lavoro')
+                ->schema([
+                    Grid::make(3)->schema([
+                        DatePicker::make('data_assunzione')
+                            ->label('Data assunzione')->displayFormat('d/m/Y'),
+                        DatePicker::make('data_licenziamento')
+                            ->label('Data licenziamento')->displayFormat('d/m/Y'),
+                        DatePicker::make('scadenza_contratto')
+                            ->label('Scadenza contratto')->displayFormat('d/m/Y'),
+                    ]),
+                ])
+                ->columns(1)
+                ->visible(fn (Get $get) => $get('role') === 'dipendente'),
+
             TextInput::make('password')
                 ->password()
                 ->revealable()
@@ -109,12 +144,27 @@ class UserResource extends Resource
                 Tables\Columns\TextColumn::make('name')->searchable()->sortable(),
                 Tables\Columns\TextColumn::make('email')->searchable(),
                 Tables\Columns\TextColumn::make('role')->badge(),
+                Tables\Columns\TextColumn::make('invito_inviato_il')
+                    ->label('Invito')
+                    ->dateTime('d/m/Y H:i')
+                    ->placeholder('Non inviato')
+                    ->badge()
+                    ->color(fn ($state) => $state ? 'success' : 'gray')
+                    ->sortable(),
                 Tables\Columns\IconColumn::make('bot_enabled')
                     ->label('Bot')
                     ->boolean()
                     ->sortable()
                     ->visible(fn () => auth()->user()?->isSuperAdmin() ?? false),
                 Tables\Columns\TextColumn::make('azienda.nome')->label('Azienda')->placeholder('—'),
+                Tables\Columns\TextColumn::make('sede')
+                    ->searchable()->toggleable(),
+                Tables\Columns\TextColumn::make('matricola')
+                    ->searchable()->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('data_assunzione')
+                    ->label('Assunto il')->date('d/m/Y')->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+
                 Tables\Columns\TextColumn::make('created_at')->date('d/m/Y')->sortable(),
             ])
             ->defaultSort('name');

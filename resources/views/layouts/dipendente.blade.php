@@ -1,19 +1,19 @@
 <!DOCTYPE html>
 <html lang="it" data-theme="light">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ config('app.name') }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
+
 <body class="min-h-screen bg-base-200 flex flex-col">
 
     {{-- Topbar --}}
     <header class="navbar bg-base-100 shadow-sm px-4 sm:px-6 sticky top-0 z-10">
         <div class="flex-1 flex items-center gap-3 min-w-0">
-            <img src="{{ asset('images/logo_inout.png') }}"
-                 alt="{{ config('app.name') }}"
-                 class="h-9 w-auto shrink-0">
+            <img src="{{ asset('images/logo_inout.png') }}" alt="{{ config('app.name') }}" class="h-9 w-auto shrink-0">
             <div class="leading-tight min-w-0">
                 <p class="font-semibold truncate">I miei documenti</p>
                 <p class="hidden sm:block text-xs text-base-content/60 truncate">
@@ -37,6 +37,15 @@
 
         @yield('content')
     </main>
+    {{-- Footer --}}
+    <footer class="bg-base-100 border-t mt-auto py-4">
+        <div
+            class="max-w-6xl mx-auto px-4 sm:px-6 flex flex-wrap items-center justify-between gap-2 text-xs text-base-content/60">
+            <span>© {{ date('Y') }} PortaleDocumenti IN&OUT</span>
+            <a href="{{ route('privacy') }}" class="link link-hover">Informativa privacy</a>
+        </div>
+    </footer>
 
 </body>
+
 </html>

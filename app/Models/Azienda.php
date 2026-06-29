@@ -11,10 +11,12 @@ class Azienda extends Model
     protected $table = 'aziende';
 
 
-    protected $fillable = [
-        'nome', 'slug', 'codice_fiscale',
-        'partita_iva', 'indirizzo', 'attiva',
-    ];
+protected $fillable = [
+    'nome', 'slug', 'codice_fiscale',
+    'partita_iva', 'indirizzo', 'attiva',
+    'email_contatto', 'responsabile_trattamento', 'dpo_email',
+];
+
 
     protected $casts = ['attiva' => 'boolean'];
 
