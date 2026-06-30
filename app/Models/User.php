@@ -19,7 +19,8 @@ protected $fillable = [
     // anagrafica import dipendenti
     'cognome', 'nome', 'matricola', 'sede', 'sesso',
     'luogo_nascita', 'data_nascita',
-    'data_assunzione', 'data_licenziamento', 'scadenza_contratto', 'invito_inviato_il',
+    'data_assunzione', 'data_licenziamento', 'scadenza_contratto', 'invito_inviato_il', 'password_impostata_il',
+
 ];
 
     protected $hidden = ['password', 'remember_token'];
@@ -34,6 +35,8 @@ protected $casts = [
     'data_assunzione' => 'date',
     'data_licenziamento' => 'date',
     'scadenza_contratto' => 'date',
+    'password_impostata_il' => 'datetime',
+
 ];
 
     public function canAccessPanel(Panel $panel): bool

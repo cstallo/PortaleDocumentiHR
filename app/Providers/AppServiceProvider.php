@@ -5,8 +5,10 @@ namespace App\Providers;
 use App\Listeners\RegistraEsitoEmail;
 use App\Models\Azienda;
 use App\Models\Documento;
+use App\Models\User;
 use App\Observers\AziendaObserver;
 use App\Policies\DocumentoPolicy;
+use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
@@ -36,5 +38,10 @@ class AppServiceProvider extends ServiceProvider
         Azienda::observe(AziendaObserver::class);
 
         Event::subscribe(RegistraEsitoEmail::class);
+        Event::listen(PasswordReset::class, function (PasswordReset $event): void {
+            if ($event->user instanceof User) {
+                $event->user->forceFill(['password_impostata_il' => now()])->saveQuietly();
+            }
+        });
     }
 }

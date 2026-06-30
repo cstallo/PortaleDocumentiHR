@@ -5,10 +5,14 @@ namespace App\Filament\Resources\Users;
 use App\Filament\Concerns\HasAziendaScope;
 use App\Models\Azienda;
 use App\Models\User;
+use App\Notifications\InvitoDipendente;
+use Filament\Actions\BulkAction;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
@@ -17,6 +21,8 @@ use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Password;
 
 class UserResource extends Resource
 {
@@ -121,6 +127,11 @@ class UserResource extends Resource
                 ->columns(1)
                 ->visible(fn (Get $get) => $get('role') === 'dipendente'),
 
+            DateTimePicker::make('password_impostata_il')
+                ->label('Password impostata il')
+                ->helperText('Si valorizza quando il dipendente imposta la password. Svuotalo per poter reinviare il link di impostazione.')
+                ->visible(fn (Get $get) => $get('role') === 'dipendente'),
+
             TextInput::make('password')
                 ->password()
                 ->revealable()
@@ -151,6 +162,13 @@ class UserResource extends Resource
                     ->badge()
                     ->color(fn ($state) => $state ? 'success' : 'gray')
                     ->sortable(),
+                Tables\Columns\TextColumn::make('password_impostata_il')
+                    ->label('Attivato')
+                    ->dateTime('d/m/Y H:i')
+                    ->placeholder('No')
+                    ->badge()
+                    ->color(fn ($state) => $state ? 'success' : 'gray')
+                    ->toggleable(),
                 Tables\Columns\IconColumn::make('bot_enabled')
                     ->label('Bot')
                     ->boolean()
@@ -166,6 +184,37 @@ class UserResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
 
                 Tables\Columns\TextColumn::make('created_at')->date('d/m/Y')->sortable(),
+            ])
+            ->toolbarActions([
+                BulkAction::make('reinvia_invito')
+                    ->label('Invia nuovo invito')
+                    ->icon('heroicon-o-envelope')
+                    ->requiresConfirmation()
+                    ->modalHeading('Invia nuovo invito')
+                    ->modalDescription('Invia (o reinvia) la mail di benvenuto ai dipendenti selezionati. Chi ha già impostato la password riceve il link di accesso; gli altri il link per impostarla.')
+                    ->action(function (Collection $records) {
+                        $inviati = 0;
+
+                        foreach ($records as $user) {
+                            if (! $user->isDipendente()) {
+                                continue;
+                            }
+
+                            $token = $user->password_impostata_il
+                                ? null
+                                : Password::broker()->createToken($user);
+
+                            $user->notify(new InvitoDipendente($token));
+                            $user->update(['invito_inviato_il' => now()]);
+                            $inviati++;
+                        }
+
+                        Notification::make()
+                            ->title("Invito inviato a {$inviati} dipendenti")
+                            ->success()
+                            ->send();
+                    })
+                    ->deselectRecordsAfterCompletion(),
             ])
             ->defaultSort('name');
     }

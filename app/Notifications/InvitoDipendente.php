@@ -14,7 +14,7 @@ class InvitoDipendente extends Notification implements ShouldQueue
     use Queueable;
 
     public function __construct(
-        private string $token,
+        private ?string $token = null,
     ) {
         $this->onQueue('notifications');
     }
@@ -31,21 +31,32 @@ class InvitoDipendente extends Notification implements ShouldQueue
 
     public function toMail(object $notifiable): MailMessage
     {
-        $url = url(route('password.reset', [
-            'token' => $this->token,
-            'email' => $notifiable->email,
-        ], false));
-
         $azienda = $notifiable->azienda?->nome;
+        $haPassword = $notifiable->password_impostata_il !== null;
 
-        return (new MailMessage)
-            ->subject('Benvenuto sul Portale Documenti — attiva il tuo accesso')
+        $mail = (new MailMessage)
+            ->subject('Portale Documenti — '.($haPassword ? 'il tuo accesso' : 'attiva il tuo accesso'))
             ->greeting("Gentile {$notifiable->name},")
-            ->line(($azienda ? "{$azienda} " : 'La tua azienda ').'ha attivato un nuovo servizio digitale: il **Portale Documenti**, dove potrai consultare e scaricare in autonomia i tuoi documenti di lavoro (cedolini e buste paga), in modo sicuro e riservato.')
-            ->line('È stato creato il tuo account personale. Per attivarlo, imposta la tua password cliccando qui sotto:')
-            ->action('Attiva il tuo accesso', $url)
-            ->line('**Trattamento dei tuoi dati personali:** una volta effettuato l\'accesso, nella tua area riservata trovi l\'informativa privacy completa (artt. 13-14 GDPR) che spiega quali dati tratta la tua azienda e come esercitare i tuoi diritti.')
-            ->line('Se il link è scaduto, usa "Password dimenticata?" nella pagina di accesso per riceverne uno nuovo.')
+            ->line(($azienda ? "{$azienda} " : 'La tua azienda ').'mette a tua disposizione il **Portale Documenti**, dove consultare e scaricare in autonomia i tuoi documenti di lavoro (cedolini e buste paga), in modo sicuro e riservato.');
+
+        if ($haPassword) {
+            // Account già attivato → link di login
+            $mail->line('Il tuo account è già attivo: accedi con le tue credenziali dal pulsante qui sotto.')
+                ->action('Accedi al portale', url(route('login')));
+        } else {
+            // Primo accesso → link per impostare la password
+            $url = url(route('password.reset', [
+                'token' => $this->token,
+                'email' => $notifiable->email,
+            ], false));
+
+            $mail->line('È stato creato il tuo account personale. Per attivarlo, imposta la tua password cliccando qui sotto:')
+                ->action('Attiva il tuo accesso', $url)
+                ->line('Se il link è scaduto, usa "Password dimenticata?" nella pagina di accesso per riceverne uno nuovo.');
+        }
+
+        return $mail
+            ->line('**Trattamento dei tuoi dati personali:** nella tua area riservata trovi l\'informativa privacy completa (artt. 13-14 GDPR) che spiega quali dati tratta la tua azienda e come esercitare i tuoi diritti.')
             ->line('Per sicurezza non condividere questa email con nessuno.')
             ->salutation('IN & OUT HR');
     }
