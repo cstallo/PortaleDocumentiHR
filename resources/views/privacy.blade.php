@@ -91,11 +91,11 @@
             @endif.
             Hai inoltre diritto di proporre reclamo al Garante per la protezione dei dati personali.</p>
 
-        <h2>7. Data Protection Officer (DPO)</h2>
         @if ($azienda?->dpo_email)
+        <h2>7. Data Protection Officer (DPO)</h2>
             <p>Il DPO è contattabile all'indirizzo {{ $azienda->dpo_email }}.</p>
         @else
-            <p>Il Titolare non ha nominato un Data Protection Officer.</p>
+            {{-- <p>Il Titolare non ha nominato un Data Protection Officer.</p> --}}
         @endif
 
 
