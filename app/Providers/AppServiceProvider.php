@@ -2,9 +2,14 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
+use App\Listeners\RegistraEsitoEmail;
 use App\Models\Azienda;
+use App\Models\Documento;
 use App\Observers\AziendaObserver;
+use App\Policies\DocumentoPolicy;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\URL;
+use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -16,9 +21,9 @@ class AppServiceProvider extends ServiceProvider
         //
     }
 
-protected $policies = [
-    \App\Models\Documento::class => \App\Policies\DocumentoPolicy::class,
-];
+    protected $policies = [
+        Documento::class => DocumentoPolicy::class,
+    ];
 
     /**
      * Bootstrap any application services.
@@ -26,8 +31,10 @@ protected $policies = [
     public function boot(): void
     {
         if (config('app.env') === 'production') {
-        \Illuminate\Support\Facades\URL::forceScheme('https');
+            URL::forceScheme('https');
         }
         Azienda::observe(AziendaObserver::class);
+
+        Event::subscribe(RegistraEsitoEmail::class);
     }
 }
