@@ -102,13 +102,11 @@ class ImportaDipendentiService
 
                 $token = Password::broker()->createToken($user);
                 $user->notify(new InvitoDipendente($token));
-                $user->notify(new InvitoDipendente($token));
                 $user->update(['invito_inviato_il' => now()]);
 
-
                 $importati++;
-     
-                } catch (\Throwable $e) {
+
+            } catch (\Throwable $e) {
                 $saltati[] = ['riga' => $numeroRiga, 'valore' => $email, 'motivo' => 'errore: '.$e->getMessage()];
             }
         }
