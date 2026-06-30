@@ -50,6 +50,15 @@
                 Salva nuova password
             </button>
         </form>
+
+        <div class="divider my-4">oppure</div>
+
+        <p class="text-center text-sm text-base-content/70 mb-3">
+            Hai già impostato la password?
+        </p>
+        <a href="{{ route('login') }}" class="btn btn-outline w-full">
+            Vai al login
+        </a>
     </div>
 </div>
 @endsection
