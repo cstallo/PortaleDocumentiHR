@@ -18,7 +18,7 @@ class ImportLog extends Model
 
     protected $casts = [
         'dettaglio_errori' => 'array',
-        'completato_il'    => 'datetime',
+        'completato_il' => 'datetime',
     ];
 
     public function azienda()
@@ -39,5 +39,10 @@ class ImportLog extends Model
     public function documenti()
     {
         return $this->hasMany(Documento::class);
+    }
+
+    public function files()
+    {
+        return $this->hasMany(ImportFile::class);
     }
 }
