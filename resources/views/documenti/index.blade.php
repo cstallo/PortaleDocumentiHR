@@ -61,9 +61,18 @@
                                             @endif
                                         </p>
                                     </div>
-                                    <a href="{{ route('documenti.download', $doc) }}" 
-                                    class="btn btn-primary btn-sm self-start shrink-0">
-                                        Scarica
+                                    <div class="flex gap-2 self-start shrink-0">
+                                        <a href="{{ route('documenti.inline', $doc) }}"
+                                           target="_blank" rel="noopener"
+                                           class="btn btn-outline btn-sm">
+                                            Apri
+                                        </a>
+                                        <a href="{{ route('documenti.download', $doc) }}"
+                                           class="btn btn-primary btn-sm">
+                                            Scarica
+                                        </a>
+                                    </div>
+
                                     </a>
                                 </div>
                             @endforeach
