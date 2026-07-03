@@ -49,7 +49,7 @@
                     @else
                         <div class="space-y-3">
                             @foreach ($cedolini as $doc)
-                                <div class="flex items-center justify-between gap-3 p-3 bg-base-200 rounded-lg">
+                             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 bg-base-200 rounded-lg">
                                     <div class="min-w-0">
                                         <p class="font-medium text-sm truncate">{{ $doc->nome_file }}</p>
                                         <p class="text-xs text-base-content/60">
@@ -61,7 +61,8 @@
                                             @endif
                                         </p>
                                     </div>
-                                    <a href="{{ route('documenti.download', $doc) }}" class="btn btn-primary btn-sm shrink-0">
+                                    <a href="{{ route('documenti.download', $doc) }}" 
+                                    class="btn btn-primary btn-sm self-start shrink-0">
                                         Scarica
                                     </a>
                                 </div>
