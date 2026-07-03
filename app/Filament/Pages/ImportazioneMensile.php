@@ -9,6 +9,7 @@ use App\Services\CartellaMeseService;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Notifications\Notification;
@@ -98,6 +99,11 @@ class ImportazioneMensile extends Page implements HasForms
                             ->required()
                             ->disk('local')
                             ->directory('zip-imports-temp'),
+
+                        Toggle::make('escludi-somministrati')
+                            ->label('Escludi somministrati')
+                            ->helperText('Se attivo, i cedolini dei dipendenti somministrati non saranno importati.')
+                            ->default(false),
                     ]),
             ]);
     }
@@ -114,6 +120,7 @@ class ImportazioneMensile extends Page implements HasForms
             aziendaId: $data['azienda_id'],
             adminId: auth()->id(),
             descrizione: $data['descrizione'] ?? null,
+            escludiSomministrati: (bool) ($data['escludi_somministrati'] ?? false),
         );
 
         Notification::make()

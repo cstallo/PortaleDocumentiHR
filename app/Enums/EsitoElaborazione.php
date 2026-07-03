@@ -11,6 +11,7 @@ enum EsitoElaborazione: string implements HasColor, HasLabel
     case CfNonTrovato = 'cf_non_trovato';
     case DuplicatoSaltato = 'duplicato_saltato';
     case NomeNonConforme = 'nome_non_conforme';
+    case SomministratoEscluso = 'somministrato_escluso';
 
     public function getLabel(): string
     {
@@ -19,6 +20,7 @@ enum EsitoElaborazione: string implements HasColor, HasLabel
             self::CfNonTrovato => 'CF non trovato',
             self::DuplicatoSaltato => 'Duplicato saltato',
             self::NomeNonConforme => 'Nome non conforme',
+            self::SomministratoEscluso => 'Somministrato escluso',
         };
     }
 
@@ -29,6 +31,7 @@ enum EsitoElaborazione: string implements HasColor, HasLabel
             self::CfNonTrovato => 'warning',
             self::DuplicatoSaltato => 'gray',
             self::NomeNonConforme => 'danger',
+            self::SomministratoEscluso => 'info',
         };
     }
 }

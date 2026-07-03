@@ -13,31 +13,32 @@ class User extends Authenticatable implements FilamentUser
 {
     use HasFactory, Notifiable;
 
-protected $fillable = [
-    'name', 'email', 'password',
-    'role', 'azienda_id', 'codice_fiscale', 'must_change_password', 'bot_enabled',
-    // anagrafica import dipendenti
-    'cognome', 'nome', 'matricola', 'sede', 'sesso',
-    'luogo_nascita', 'data_nascita',
-    'data_assunzione', 'data_licenziamento', 'scadenza_contratto', 'invito_inviato_il', 'password_impostata_il',
+    protected $fillable = [
+        'name', 'email', 'password',
+        'role', 'azienda_id', 'codice_fiscale', 'must_change_password', 'bot_enabled',
+        // anagrafica import dipendenti
+        'cognome', 'nome', 'matricola', 'sede', 'sesso', 'somministrato',
+        'luogo_nascita', 'data_nascita',
+        'data_assunzione', 'data_licenziamento', 'scadenza_contratto', 'invito_inviato_il', 'password_impostata_il',
 
-];
+    ];
 
     protected $hidden = ['password', 'remember_token'];
 
-protected $casts = [
-    'email_verified_at' => 'datetime',
-    'password' => 'hashed',
-    'must_change_password' => 'boolean',
-    'bot_enabled' => 'boolean',
-    // date anagrafica
-    'data_nascita' => 'date',
-    'data_assunzione' => 'date',
-    'data_licenziamento' => 'date',
-    'scadenza_contratto' => 'date',
-    'password_impostata_il' => 'datetime',
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
+        'must_change_password' => 'boolean',
+        'bot_enabled' => 'boolean',
+        // date anagrafica
+        'data_nascita' => 'date',
+        'data_assunzione' => 'date',
+        'data_licenziamento' => 'date',
+        'scadenza_contratto' => 'date',
+        'password_impostata_il' => 'datetime',
+        'somministrato' => 'boolean',
 
-];
+    ];
 
     public function canAccessPanel(Panel $panel): bool
     {

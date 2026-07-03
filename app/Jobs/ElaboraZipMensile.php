@@ -33,6 +33,8 @@ class ElaboraZipMensile implements ShouldQueue
         private int $aziendaId,
         private int $adminId,
         private ?string $descrizione = null,
+        private bool $escludiSomministrati = false,
+
     ) {
         $this->onQueue('import');
     }
@@ -61,7 +63,7 @@ class ElaboraZipMensile implements ShouldQueue
         }
 
         $totFile = $zip->numFiles;
-        $elaborati = $erroriCf = $nomeNonValido = $duplicati = 0;
+        $elaborati = $erroriCf = $nomeNonValido = $duplicati = $somministratiEsclusi = 0;
         $dettaglioErrori = [];
         $documentiPerCf = [];
         $utentiPerCf = [];
@@ -94,6 +96,32 @@ class ElaboraZipMensile implements ShouldQueue
                 $dettaglioErrori[] = ['file' => $basename, 'errore' => 'nome_non_conforme'];
 
                 continue;
+            }
+
+            if ($this->escludiSomministrati) {
+                $somministrato = User::byCodiceFiscale($cf)
+                    ->where('azienda_id', $this->aziendaId)
+                    ->where('somministrato', true)
+                    ->first();
+
+                if ($somministrato !== null) {
+                    $quarantena = "somministrati_esclusi/{$azienda->slug}/{$basename}";
+                    Storage::disk('cedolini')->put($quarantena, $zip->getFromIndex($i));
+
+                    ImportFile::create([
+                        'import_log_id' => $log->id,
+                        'nome_file' => $basename,
+                        'codice_fiscale' => strtoupper($cf),
+                        'esito_elaborazione' => EsitoElaborazione::SomministratoEscluso,
+                        'user_id' => $somministrato->id,
+                        'nota_errore' => "Escluso (somministrato): {$quarantena}",
+                    ]);
+
+                    $somministratiEsclusi++;
+                    $dettaglioErrori[] = ['file' => $basename, 'errore' => 'somministrato_escluso', 'cf' => $cf];
+
+                    continue;
+                }
             }
 
             // Dedup: se esiste già un Documento per questa persona in questo mese,
@@ -203,6 +231,7 @@ class ElaboraZipMensile implements ShouldQueue
             'file_errore_cf' => $erroriCf,
             'file_nome_non_valido' => $nomeNonValido,
             'file_duplicati' => $duplicati,
+            'file_somministrati_esclusi' => $somministratiEsclusi,
             'dettaglio_errori' => $dettaglioErrori,
             'completato_il' => now(),
         ]);
