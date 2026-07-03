@@ -56,10 +56,6 @@ class UserForm
                             DatePicker::make('data_nascita')
                                 ->label('Data di nascita')
                                 ->displayFormat('d/m/Y'),
-                            Toggle::make('somministrato')
-                                ->label('Somministrato')
-                                ->helperText('Dipendente con contratto di somministrazione (agenzia interinale).'),
-
                         ]),
                     ])
                     ->columns(1)

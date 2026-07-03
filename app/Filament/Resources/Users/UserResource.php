@@ -108,6 +108,9 @@ class UserResource extends Resource
                         DatePicker::make('data_nascita')
                             ->label('Data di nascita')
                             ->displayFormat('d/m/Y'),
+                        Toggle::make('somministrato')
+                            ->label('Somministrato')
+                            ->helperText('Contratto di somministrazione (agenzia interinale).'),
                     ]),
                 ])
                 ->columns(1)
@@ -153,7 +156,8 @@ class UserResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('name')->searchable()->sortable(),
-                Tables\Columns\TextColumn::make('email')->searchable(),
+                Tables\Columns\TextColumn::make('email')->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('role')->badge(),
                 Tables\Columns\TextColumn::make('invito_inviato_il')
                     ->label('Invito')
@@ -175,6 +179,10 @@ class UserResource extends Resource
                     ->sortable()
                     ->visible(fn () => auth()->user()?->isSuperAdmin() ?? false),
                 Tables\Columns\TextColumn::make('azienda.nome')->label('Azienda')->placeholder('—'),
+                Tables\Columns\ToggleColumn::make('somministrato')
+                    ->label('Somministrato')
+                    ->sortable()
+                    ->disabled(fn (User $record): bool => $record->role !== 'dipendente'),
                 Tables\Columns\TextColumn::make('sede')
                     ->searchable()->toggleable(),
                 Tables\Columns\TextColumn::make('matricola')
@@ -183,7 +191,8 @@ class UserResource extends Resource
                     ->label('Assunto il')->date('d/m/Y')->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
 
-                Tables\Columns\TextColumn::make('created_at')->date('d/m/Y')->sortable(),
+                Tables\Columns\TextColumn::make('created_at')->date('d/m/Y')->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->toolbarActions([
                 BulkAction::make('reinvia_invito')

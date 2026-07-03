@@ -100,10 +100,10 @@ class ImportazioneMensile extends Page implements HasForms
                             ->disk('local')
                             ->directory('zip-imports-temp'),
 
-                        Toggle::make('escludi-somministrati')
+                        Toggle::make('escludi_somministrati')
                             ->label('Escludi somministrati')
                             ->helperText('Se attivo, i cedolini dei dipendenti somministrati non saranno importati.')
-                            ->default(false),
+                            ->default(true),
                     ]),
             ]);
     }
